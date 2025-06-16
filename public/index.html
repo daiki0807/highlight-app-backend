@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章ハイライト＆コピーアプリ（完全版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+body {
+        font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden; 
+    }
+    
+    .header {
+        background: linear-gradient(45deg, #ff6b6b, #ffa726);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .auth-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 3px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .auth-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .auth-btn, .logout-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .auth-btn {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        color: white;
+    }
+    
+    .logout-btn {
+        background: linear-gradient(45deg, #ff6b6b, #ffa726);
+        color: white;
+    }
+    
+    .auth-btn:hover, .logout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .toolbar {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 3px solid #e9ecef;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; 
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .file-select-btn, .save-btn, .action-btn, .clear-btn, .clear-selected-btn {
+        padding: 10px 20px; 
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.9rem; 
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    }
+    
+    .file-select-btn {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        color: white;
+    }
+    
+    .save-btn {
+        background: linear-gradient(45deg, #4caf50, #8bc34a);
+        color: white;
+    }
+    
+    .action-btn {
+        background: linear-gradient(45deg, #2196F3, #21CBF3); 
+        color: white;
+    }
+    .clear-selected-btn {
+        background: linear-gradient(45deg, #ff9800, #ffc107); 
+        color: white;
+    }
+    
+    .clear-btn { 
+        background: linear-gradient(45deg, #ff6b6b, #ffa726);
+        color: white;
+    }
+    
+    .file-select-btn:hover, .save-btn:hover, .action-btn:hover, .clear-btn:hover, .clear-selected-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2); 
+    }
+    
+    .writing-mode-toggle {
+        display: flex;
+        background: white;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+        margin: 5px; 
+    }
+    
+    .writing-mode-btn {
+        padding: 10px 15px; 
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem; 
+        font-weight: bold;
+        transition: all 0.3s ease;
+        color: #666;
+    }
+    
+    .writing-mode-btn.active {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+    }
+    
+    .color-palette {
+        display: flex;
+        gap: 8px; 
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 5px; 
+    }
+    
+    .color-btn {
+        width: 40px; 
+        height: 40px; 
+        border: 3px solid white; 
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2); 
+        position: relative;
+    }
+    
+    .color-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 12px rgba(0,0,0,0.3); 
+    }
+    
+    .color-btn.active {
+        border-color: #333;
+        transform: scale(1.15);
+    }
+    
+    .color-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px; 
+        height: 16px; 
+        background: white;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .color-btn.active::after {
+        opacity: 1;
+    }
+    
+    .documents-list {
+        background: #f8f9fa;
+        padding: 20px;
+        border-bottom: 3px solid #e9ecef;
+    }
+    
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .document-card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative; 
+    }
+    
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+    
+    .document-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    
+    .document-meta {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .delete-doc-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-size: 1rem; 
+        line-height: 30px; 
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        z-index: 10; 
+    }
+
+    .delete-doc-btn:hover {
+        background: #e53935; 
+        transform: scale(1.1);
+    }
+    
+    .content-area {
+        padding: 30px;
+        background: #fafafa;
+    }
+    
+    .text-display {
+        background: white;
+        padding: 20px; 
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        min-height: 400px; 
+        font-size: 1.2rem;
+        line-height: 1.8;
+        border: 3px dashed #e9ecef;
+        transition: all 0.3s ease;
+        user-select: text; 
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        
+        overflow: auto; 
+        width: 100%;    
+        max-height: 75vh; 
+    }
+    
+    .text-display.has-content {
+        border-style: solid;
+        border-color: #4facfe;
+    }
+    
+    .text-display.vertical {
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+    }
+    
+    .text-display.horizontal {
+        writing-mode: horizontal-tb;
+    }
+    
+    .upload-prompt {
+        text-align: center;
+        color: #666;
+        font-size: 1.5rem;
+        margin-top: 100px;
+    }
+    
+    .upload-prompt .icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #ccc;
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .notification.show {
+        transform: translateX(0);
+    }
+    
+    .notification.error {
+        background: linear-gradient(45deg, #ff6b6b, #ffa726);
+    }
+    
+    .notification.success {
+        background: linear-gradient(45deg, #4caf50, #8bc34a);
+    }
+     .notification.warning {
+        background: linear-gradient(45deg, #ffeb3b, #ffc107); 
+        color: #333; 
+    }
+    .notification.info { 
+        background: linear-gradient(45deg, #2196F3, #21CBF3);
+        color: white;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .modal h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #4facfe;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .modal-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-btn.primary {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        color: white;
+    }
+    .modal-btn.danger {
+        background: linear-gradient(45deg, #ff6b6b, #ffa726);
+        color: white;
+    }
+    
+    .modal-btn.secondary {
+        background: #e9ecef;
+        color: #666;
+    }
+    
+    .modal-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* CSSでハイライトクラスを定義 */
+    .highlight-yellow { background-color: #fff176 !important; color: #333; }
+    .highlight-pink { background-color: #f48fb1 !important; color: #333; }
+    .highlight-green { background-color: #81c784 !important; color: #333; }
+    .highlight-blue { background-color: #64b5f6 !important; color: #333; }
+    .highlight-orange { background-color: #ffb74d !important; color: #333; }
+    .highlight-purple { background-color: #ba68c8 !important; color: white; }
+    .highlight-red { background-color: #e57373 !important; color: white; }
+    
+    .hidden {
+        display: none !important;
+    }
+    
+    @media (max-width: 768px) {
+        .auth-section {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .toolbar {
+            flex-direction: column;
+            gap: 15px; 
+        }
+         .toolbar > * { 
+            width: calc(100% - 20px);
+            max-width: 300px; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .writing-mode-toggle, .color-palette {
+            width: auto; 
+            justify-content: center;
+        }
+        
+        .content-area {
+            padding: 20px;
+        }
+        
+        .text-display {
+            padding: 20px;
+            max-height: 60vh; 
+        }
+    }
+</style>
+
+</head>
+<body>
+    <!-- HTML構造は変更なし -->
+    <div class="container">
+        <div class="header">
+            <h1>📝 文章ハイライト＆コピーアプリ（完全版）</h1>
+            <p>文章をアップロードして、大切な部分をカラフルにハイライトしよう！</p>
+        </div>
+
+<div class="auth-section">
+        <div class="user-info">
+            <span id="userGreeting" class="hidden">こんにちは、<span id="username"></span>さん！</span>
+        </div>
+        <div class="auth-buttons">
+            <button class="auth-btn" id="loginBtn">ログイン</button>
+            <button class="auth-btn" id="registerBtn">新規登録</button>
+            <button class="logout-btn hidden" id="logoutBtn">ログアウト</button>
+        </div>
+    </div>
+    
+    <div class="documents-list hidden" id="documentsList">
+        <h3>📚 保存された文書</h3>
+        <div class="documents-grid" id="documentsGrid">
+            <!-- 文書一覧がここに表示されます -->
+        </div>
+    </div>
+    
+    <div class="toolbar">
+        <button class="file-select-btn" id="fileSelectBtn">📁 ファイルを選ぶ</button>
+        <input type="file" id="fileInput" accept=".txt,.md" style="display: none;">
+        <button class="save-btn hidden" id="saveBtn">💾 保存</button>
+        
+        <div class="writing-mode-toggle">
+            <button class="writing-mode-btn active" data-mode="horizontal">横書き</button>
+            <button class="writing-mode-btn" data-mode="vertical">縦書き</button>
+        </div>
+        
+        <div class="color-palette">
+            <div class="color-btn active" data-color="yellow" style="background-color: #fff176;" title="黄色 (1)"></div>
+            <div class="color-btn" data-color="pink" style="background-color: #f48fb1;" title="ピンク (2)"></div>
+            <div class="color-btn" data-color="green" style="background-color: #81c784;" title="緑 (3)"></div>
+            <div class="color-btn" data-color="blue" style="background-color: #64b5f6;" title="青 (4)"></div>
+            <div class="color-btn" data-color="orange" style="background-color: #ffb74d;" title="オレンジ (5)"></div>
+            <div class="color-btn" data-color="purple" style="background-color: #ba68c8;" title="紫 (6)"></div>
+            <div class="color-btn" data-color="red" style="background-color: #e57373;" title="赤 (7)"></div>
+        </div>
+        
+        <button class="clear-btn" id="clearAllHighlightsBtn">🗑️ 全ハイライトクリア (Esc)</button>
+        <button class="clear-selected-btn" id="clearSelectedHighlightsBtn">🧹 選択ハイライトクリア (Del/Bsp)</button>
+        <button class="action-btn" id="copySelectedTextBtn">📋 選択テキストコピー</button>
+    </div>
+    
+    <div class="content-area">
+        <div class="text-display horizontal" id="textDisplay">
+            <div class="upload-prompt">
+                <div class="icon">📄</div>
+                <p>ログイン後、テキストファイルをアップロードしてください</p>
+                <p>(.txt または .md ファイル)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <h2>🔐 ログイン</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">メールアドレス</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">パスワード</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn secondary" id="loginCancelBtn">キャンセル</button>
+                <button type="submit" class="modal-btn primary">ログイン</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <h2>👤 新規登録</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="registerUsername">ユーザー名</label>
+                <input type="text" id="registerUsername" required>
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">メールアドレス</label>
+                <input type="email" id="registerEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">パスワード</label>
+                <input type="password" id="registerPassword" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn secondary" id="registerCancelBtn">キャンセル</button>
+                <button type="submit" class="modal-btn primary">登録</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteConfirmModal" class="modal">
+    <div class="modal-content">
+        <h2>🗑️ 文書削除の確認</h2>
+        <p id="deleteConfirmMessage" style="text-align: center; margin-bottom: 20px; color: #555;">本当にこの文書を削除しますか？</p>
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn secondary" id="deleteCancelBtn">キャンセル</button>
+            <button type="button" class="modal-btn danger" id="confirmDeleteBtn">削除する</button> 
+        </div>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:3001/api';
+    let currentUser = null;
+    let currentDocument = null;
+    let currentColor = 'yellow';
+    let docIdToDelete = null; 
+    let textDisplayElement, saveBtnElement, notificationElement;
+    let loginBtnElement, registerBtnElement, logoutBtnElement, userGreetingElement, usernameElement, documentsListElement;
+    let deleteConfirmModalElement, deleteConfirmMessageElement, confirmDeleteBtnElement, deleteCancelBtnElement; 
+    let copySelectedTextBtnElement, clearAllHighlightsBtnElement, clearSelectedHighlightsBtnElement; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        textDisplayElement = document.getElementById('textDisplay');
+        saveBtnElement = document.getElementById('saveBtn');
+        notificationElement = document.getElementById('notification');
+        loginBtnElement = document.getElementById('loginBtn');
+        registerBtnElement = document.getElementById('registerBtn');
+        logoutBtnElement = document.getElementById('logoutBtn');
+        userGreetingElement = document.getElementById('userGreeting');
+        usernameElement = document.getElementById('username');
+        documentsListElement = document.getElementById('documentsList');
+        deleteConfirmModalElement = document.getElementById('deleteConfirmModal');
+        deleteConfirmMessageElement = document.getElementById('deleteConfirmMessage');
+        confirmDeleteBtnElement = document.getElementById('confirmDeleteBtn');
+        deleteCancelBtnElement = document.getElementById('deleteCancelBtn');
+        copySelectedTextBtnElement = document.getElementById('copySelectedTextBtn'); 
+        clearAllHighlightsBtnElement = document.getElementById('clearAllHighlightsBtn'); 
+        clearSelectedHighlightsBtnElement = document.getElementById('clearSelectedHighlightsBtn'); 
+
+        checkAuthStatus();
+        setupEventListeners();
+        setupDragAndDrop();
+    });
+    
+    function checkAuthStatus() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch(`${API_BASE_URL}/auth/verify`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => {
+                if (response.ok) return response.json();
+                localStorage.removeItem('token');
+                throw new Error('Invalid token');
+            })
+            .then(data => {
+                if (data && data.user) {
+                    currentUser = data.user;
+                    updateAuthUI();
+                    loadDocuments();
+                } else {
+                    currentUser = null;
+                    updateAuthUI();
+                }
+            })
+            .catch(error => {
+                localStorage.removeItem('token');
+                currentUser = null;
+                updateAuthUI();
+            });
+        } else {
+            currentUser = null;
+            updateAuthUI();
+        }
+    }
+    
+    function updateAuthUI() {
+        if (!loginBtnElement) return;
+
+        if (currentUser) {
+            loginBtnElement.classList.add('hidden');
+            registerBtnElement.classList.add('hidden');
+            logoutBtnElement.classList.remove('hidden');
+            userGreetingElement.classList.remove('hidden');
+            usernameElement.textContent = currentUser.username;
+            documentsListElement.classList.remove('hidden');
+            if (currentDocument && saveBtnElement) {
+                saveBtnElement.classList.remove('hidden');
+            } else if (saveBtnElement) {
+                saveBtnElement.classList.add('hidden');
+            }
+        } else {
+            loginBtnElement.classList.remove('hidden');
+            registerBtnElement.classList.remove('hidden');
+            logoutBtnElement.classList.add('hidden');
+            userGreetingElement.classList.add('hidden');
+            documentsListElement.classList.add('hidden');
+            if (saveBtnElement) saveBtnElement.classList.add('hidden');
+            clearTextDisplay();
+        }
+    }
+    
+    function setupEventListeners() {
+        loginBtnElement.addEventListener('click', () => openModal('loginModal'));
+        registerBtnElement.addEventListener('click', () => openModal('registerModal'));
+        logoutBtnElement.addEventListener('click', logout);
+        
+        document.getElementById('loginCancelBtn').addEventListener('click', () => closeModal('loginModal'));
+        document.getElementById('registerCancelBtn').addEventListener('click', () => closeModal('registerModal'));
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        
+        document.getElementById('fileSelectBtn').addEventListener('click', () => {
+            if (!currentUser) {
+                showNotification('ログインが必要です', 'error');
+                return;
+            }
+            document.getElementById('fileInput').click();
+        });
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        if (saveBtnElement) saveBtnElement.addEventListener('click', saveDocument);
+        
+        document.querySelectorAll('.writing-mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const mode = this.dataset.mode;
+                document.querySelectorAll('.writing-mode-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                if (textDisplayElement) {
+                    textDisplayElement.classList.remove('horizontal', 'vertical');
+                    textDisplayElement.classList.add(mode);
+                }
+            });
+        });
+        
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentColor = this.dataset.color;
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        if (clearAllHighlightsBtnElement) { 
+             clearAllHighlightsBtnElement.addEventListener('click', clearAllHighlights);
+        }
+        
+        if (copySelectedTextBtnElement) {
+            copySelectedTextBtnElement.addEventListener('click', () => {
+                const selection = window.getSelection();
+                const selectedText = selection ? selection.toString().trim() : '';
+                if (selectedText.length > 0) {
+                    copyToClipboard(selectedText);
+                } else {
+                    showNotification('コピーするテキストが選択されていません', 'info');
+                }
+            });
+        }
+
+        if (clearSelectedHighlightsBtnElement) {
+            clearSelectedHighlightsBtnElement.addEventListener('click', () => {
+                const selection = window.getSelection();
+                if (selection && !selection.isCollapsed && textDisplayElement && textDisplayElement.contains(selection.anchorNode)) {
+                    if (textDisplayElement.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+                        clearSelectedHighlights();
+                    } else {
+                        showNotification('ハイライトをクリアする範囲が文書内ではありません。', 'warning');
+                    }
+                } else {
+                    showNotification('ハイライトをクリアするテキストが選択されていません。', 'info');
+                }
+            });
+        }
+        
+        if (deleteCancelBtnElement) {
+            deleteCancelBtnElement.addEventListener('click', () => {
+                closeModal('deleteConfirmModal');
+                docIdToDelete = null; 
+            });
+        }
+        if (confirmDeleteBtnElement) {
+            confirmDeleteBtnElement.addEventListener('click', async () => {
+                if (docIdToDelete) {
+                    await deleteDocument(docIdToDelete);
+                    closeModal('deleteConfirmModal');
+                    docIdToDelete = null; 
+                }
+            });
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+                if (event.target.id === 'deleteConfirmModal') {
+                    docIdToDelete = null; 
+                }
+            }
+        });
+
+        if (textDisplayElement) {
+            setupTextSelectionListeners(textDisplayElement);
+        }
+    }
+    
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.style.display = 'block';
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.style.display = 'none';
+    }
+    
+    async function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            
+            if (response.ok && data.token && data.user) {
+                localStorage.setItem('token', data.token);
+                currentUser = data.user;
+                updateAuthUI();
+                closeModal('loginModal');
+                showNotification('ログインしました！', 'success');
+                loadDocuments();
+            } else {
+                showNotification(data.message || data.error || 'ログインに失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('ログイン処理中にエラーが発生しました', 'error');
+        }
+    }
+    
+    async function handleRegister(event) {
+        event.preventDefault();
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            const data = await response.json();
+            
+            if (response.ok && data.token && data.user) {
+                localStorage.setItem('token', data.token);
+                currentUser = data.user;
+                updateAuthUI();
+                closeModal('registerModal');
+                showNotification('ユーザー登録が完了しました！', 'success');
+                loadDocuments();
+            } else {
+                showNotification(data.message || data.error || '登録に失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('ユーザー登録処理中にエラーが発生しました', 'error');
+        }
+    }
+    
+    function logout() {
+        localStorage.removeItem('token');
+        currentUser = null;
+        currentDocument = null;
+        updateAuthUI(); 
+        closeModal('deleteConfirmModal'); 
+        docIdToDelete = null;
+        showNotification('ログアウトしました', 'success');
+    }
+    
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!currentUser) {
+            showNotification('ログインが必要です', 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/documents/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data && data._id) {
+                currentDocument = data;
+                displayDocument(currentDocument);
+                showNotification('ファイルをアップロードしました！', 'success');
+                loadDocuments(); 
+                if (currentUser && saveBtnElement) saveBtnElement.classList.remove('hidden');
+            } else {
+                showNotification(data.message || data.error || 'アップロードに失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('ファイルアップロード処理中にエラーが発生しました', 'error');
+        }
+    }
+        
+    function displayDocument(docData) {
+        if (!textDisplayElement) return;
+
+        if (!docData || typeof docData.content !== 'string') {
+            showNotification('文書の内容が見つからないか、無効です', 'error');
+            textDisplayElement.innerHTML = '<div class="upload-prompt"><div class="icon">⚠️</div><p>文書データの表示に失敗しました。</p></div>';
+            textDisplayElement.classList.remove('has-content');
+            if (saveBtnElement) saveBtnElement.classList.add('hidden');
+            return;
+        }
+        
+        try {
+            const formattedContent = docData.content
+                .split('\n\n')
+                .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+            
+            textDisplayElement.innerHTML = formattedContent;
+            textDisplayElement.classList.add('has-content');
+            
+            let modeToApply = 'horizontal'; 
+            if (docData.writingMode && (docData.writingMode === 'horizontal' || docData.writingMode === 'vertical')) {
+                modeToApply = docData.writingMode;
+            }
+            
+            document.querySelectorAll('.writing-mode-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.writing-mode-btn[data-mode="${modeToApply}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            textDisplayElement.classList.remove('horizontal', 'vertical');
+            textDisplayElement.classList.add(modeToApply);
+            
+            if (docData.highlights && docData.highlights.length > 0) {
+                 setTimeout(() => {
+                    restoreSimpleHighlights(docData.highlights);
+                 }, 0);
+            }
+            
+            if (currentUser && saveBtnElement) saveBtnElement.classList.remove('hidden');
+            
+        } catch (error) {
+            showNotification('文書の表示中にエラーが発生しました', 'error');
+            textDisplayElement.innerHTML = '<div class="upload-prompt"><div class="icon">⚠️</div><p>文書表示エラー。</p></div>';
+            textDisplayElement.classList.remove('has-content');
+            if (saveBtnElement) saveBtnElement.classList.add('hidden');
+        }
+    }
+
+    function restoreSimpleHighlights(highlights) {
+        if (!textDisplayElement || !highlights || highlights.length === 0) return;
+
+        const sortedHighlights = [...highlights].sort((a, b) => {
+            if (!a.text || !b.text) return 0;
+            return b.text.length - a.text.length;
+        });
+
+        let currentHtml = textDisplayElement.innerHTML;
+
+        sortedHighlights.forEach(highlight => {
+            if (!highlight.text || !highlight.color) return; 
+
+            const regex = new RegExp(escapeRegExp(highlight.text), 'g');
+            currentHtml = currentHtml.replace(regex, (match) => {
+                if (match.includes('highlight-')) return match; 
+                return `<span class="highlight-${highlight.color}">${match}</span>`;
+            });
+        });
+        textDisplayElement.innerHTML = currentHtml;
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    async function loadDocuments() {
+        if (!currentUser) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/documents`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const documents = await response.json();
+            
+            if (response.ok) {
+                displayDocumentsList(documents);
+            } else {
+                showNotification(documents.message || documents.error || '文書一覧の読み込みに失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('文書一覧の読み込み処理中にエラーが発生しました', 'error');
+        }
+    }
+    
+    function displayDocumentsList(documents) {
+        const grid = document.getElementById('documentsGrid');
+        if (!grid) return;
+
+        if (!Array.isArray(documents) || documents.length === 0) {
+            grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">保存された文書はありません</p>';
+            return;
+        }
+        
+        grid.innerHTML = documents.map(doc => {
+            const docTitle = doc.title || '無題の文書';
+            return `
+            <div class="document-card" onclick="loadDocument('${doc._id}')">
+                <div class="document-title">${docTitle}</div>
+                <div class="document-meta">
+                    作成日: ${new Date(doc.createdAt).toLocaleDateString()}
+                    ${doc.highlights && Array.isArray(doc.highlights) ? `<br>ハイライト: ${doc.highlights.length}個` : ''}
+                </div>
+                <button class="delete-doc-btn" data-doc-id="${doc._id}" data-doc-title="${docTitle}" title="削除">🗑️</button>
+            </div>
+        `}).join('');
+
+        grid.querySelectorAll('.delete-doc-btn').forEach(btn => {
+            btn.addEventListener('click', function(event) {
+                event.stopPropagation(); 
+                const docId = this.dataset.docId;
+                const docTitle = this.dataset.docTitle;
+                openDeleteConfirmModal(docId, docTitle);
+            });
+        });
+    }
+    
+    async function loadDocument(documentId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data && data._id) {
+                currentDocument = data;
+                displayDocument(currentDocument);
+                showNotification(`「${currentDocument.title || '文書'}」を読み込みました`, 'success');
+            } else {
+                showNotification(data.message || data.error || '文書の読み込みに失敗しました', 'error');
+                if (saveBtnElement) saveBtnElement.classList.add('hidden');
+            }
+        } catch (error) {
+            showNotification('文書読み込み処理中にエラーが発生しました', 'error');
+            if (saveBtnElement) saveBtnElement.classList.add('hidden');
+        }
+    }
+    
+    async function saveDocument() {
+        if (!currentDocument || !currentDocument._id) {
+            showNotification('保存する文書が選択されていません', 'error');
+            return;
+        }
+        if (!currentUser) {
+            showNotification('保存するにはログインが必要です', 'error');
+            return;
+        }
+        
+        const highlights = extractHighlights();
+        const writingMode = document.querySelector('.writing-mode-btn.active')?.dataset.mode || 'horizontal';
+        
+        const updateData = { 
+            highlights,
+            writingMode
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/documents/${currentDocument._id}`, { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(updateData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data && data._id) {
+                currentDocument = data; 
+                showNotification('文書を保存しました！', 'success');
+                loadDocuments(); 
+            } else {
+                showNotification(data.message || data.error || '保存に失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('保存処理中にエラーが発生しました', 'error');
+        }
+    }
+
+    function openDeleteConfirmModal(docId, docTitle) {
+        if (!deleteConfirmModalElement || !deleteConfirmMessageElement) return;
+        docIdToDelete = docId;
+        deleteConfirmMessageElement.textContent = `本当に「${docTitle}」を削除しますか？この操作は元に戻せません。`;
+        openModal('deleteConfirmModal');
+    }
+
+    async function deleteDocument(documentId) {
+        if (!currentUser) {
+            showNotification('削除するにはログインが必要です', 'error');
+            return;
+        }
+        if (!documentId) {
+            showNotification('削除対象の文書IDがありません', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                showNotification('文書を削除しました', 'success');
+                loadDocuments(); 
+
+                if (currentDocument && currentDocument._id === documentId) {
+                    clearTextDisplay();
+                }
+            } else {
+                const data = await response.json().catch(() => ({ message: '削除リクエストに失敗しました' }));
+                showNotification(data.message || data.error || '文書の削除に失敗しました', 'error');
+            }
+        } catch (error) {
+            showNotification('文書削除処理中にエラーが発生しました', 'error');
+        }
+    }
+    
+    function extractHighlights() {
+        if (!textDisplayElement) return [];
+        const highlights = [];
+        const highlightedElements = textDisplayElement.querySelectorAll('span[class*="highlight-"]');
+        
+        highlightedElements.forEach(element => {
+            const colorClass = Array.from(element.classList).find(cls => cls.startsWith('highlight-'));
+            const color = colorClass ? colorClass.replace('highlight-', '') : 'yellow';
+            
+            highlights.push({
+                text: element.textContent, 
+                color: color,
+            });
+        });
+        return highlights;
+    }
+    
+    function setupTextSelectionListeners(displayElement) {
+        displayElement.addEventListener('mouseup', handleTextSelectionForHighlighting); 
+        displayElement.addEventListener('dblclick', handleTextSelectionForHighlighting); 
+        
+        displayElement.addEventListener('contextmenu', function(e) {
+            const selection = window.getSelection();
+            if (selection && selection.toString().trim().length > 0) {
+                e.preventDefault(); 
+                copyToClipboard(selection.toString());
+            }
+        });
+    }
+
+    function handleTextSelectionForHighlighting(event) {
+        if (event.target.closest('button, input, select, textarea')) {
+            return; 
+        }
+
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length > 0) {
+            if (textDisplayElement && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                if (textDisplayElement.contains(range.commonAncestorContainer)) {
+                    highlightSelection(selection);
+                }
+            }
+        }
+    }
+    
+    // 新しい highlightSelection: 選択範囲内の既存ハイライトをすべてアンラップし、その後新しい色でラップ
+    function highlightSelection(selection) {
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            if (!range || range.collapsed) return;
+
+            // 1. 選択範囲内の既存ハイライトを全てアンラップ（部分的なspanも含む）
+            // まず、選択範囲を保持
+            const startContainer = range.startContainer;
+            const startOffset = range.startOffset;
+            const endContainer = range.endContainer;
+            const endOffset = range.endOffset;
+
+            // 対象範囲内の全テキストノード抽出
+            const walker = document.createTreeWalker(
+                textDisplayElement,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: function(node) {
+                        // テキストノードがrangeと交差していればOK
+                        const nodeRange = document.createRange();
+                        nodeRange.selectNodeContents(node);
+                        if (
+                            range.compareBoundaryPoints(Range.END_TO_START, nodeRange) < 0 &&
+                            range.compareBoundaryPoints(Range.START_TO_END, nodeRange) > 0
+                        ) {
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                }
+            );
+
+            let node;
+            const nodesToProcess = [];
+            while ((node = walker.nextNode())) {
+                nodesToProcess.push(node);
+            }
+
+            nodesToProcess.forEach(textNode => {
+                const parent = textNode.parentNode;
+                if (parent && parent.matches && parent.matches('span[class*="highlight-"]')) {
+                    // spanの両端でsplitTextする
+                    // span内のどこか一部のみ選択されている場合にも対応
+                    // start, endがこのtextNodeにある場合はsplit
+                    if (textNode === startContainer && startOffset > 0) {
+                        textNode.splitText(startOffset);
+                    }
+                    if (textNode === endContainer && endOffset < textNode.length) {
+                        textNode.splitText(endOffset);
+                    }
+                }
+            });
+
+            // もう一度全span[class*="highlight-"]をwalkして、選択範囲にかかっているものをunwrap
+            function unwrapHighlightsInRange(range) {
+                const walker = document.createTreeWalker(
+                    textDisplayElement,
+                    NodeFilter.SHOW_ELEMENT,
+                    {
+                        acceptNode: function(node) {
+                            if (node.matches && node.matches('span[class*="highlight-"]')) {
+                                // spanがrangeに少しでも含まれていればunwrap
+                                const spanRange = document.createRange();
+                                spanRange.selectNodeContents(node);
+                                if (
+                                    range.compareBoundaryPoints(Range.END_TO_START, spanRange) < 0 &&
+                                    range.compareBoundaryPoints(Range.START_TO_END, spanRange) > 0
+                                ) {
+                                    return NodeFilter.FILTER_ACCEPT;
+                                }
+                            }
+                            return NodeFilter.FILTER_SKIP;
+                        }
+                    }
+                );
+                const toUnwrap = [];
+                let el;
+                while ((el = walker.nextNode())) {
+                    toUnwrap.push(el);
+                }
+                toUnwrap.forEach(unwrapSpan);
+            }
+            unwrapHighlightsInRange(range);
+
+            // 2. 選択範囲を新しい色でラップ
+            // 選択範囲を再設定
+            const selection2 = window.getSelection();
+            selection2.removeAllRanges();
+            const newRange = document.createRange();
+            try {
+                newRange.setStart(startContainer, startOffset);
+                newRange.setEnd(endContainer, endOffset);
+            } catch (e) {
+                // 範囲がずれていた場合は諦める
+                return;
+            }
+            selection2.addRange(newRange);
+
+            // 3. 新しいspanでsurroundContents
+            try {
+                const span = document.createElement('span');
+                span.className = `highlight-${currentColor}`;
+                newRange.surroundContents(span);
+                // selection維持
+                selection2.removeAllRanges();
+                const selectRange = document.createRange();
+                selectRange.selectNodeContents(span);
+                selection2.addRange(selectRange);
+            } catch (e) {
+                showNotification('ハイライト適用に失敗しました（選択範囲が複雑な場合は段落を区切って選択してください）', 'warning');
+            }
+        }
+    }
+    
+    function unwrapSpan(element) {
+        const parent = element.parentNode;
+        if (parent) {
+            while (element.firstChild) {
+                parent.insertBefore(element.firstChild, element);
+            }
+            parent.removeChild(element);
+        }
+    }
+    
+    function clearAllHighlights() { 
+        if (!textDisplayElement) return;
+        const highlightedElements = textDisplayElement.querySelectorAll('span[class*="highlight-"]');
+        
+        highlightedElements.forEach(unwrapSpan); 
+        
+        textDisplayElement.normalize();
+        showNotification('全てのハイライトをクリアしました', 'info');
+    }
+
+    function clearSelectedHighlights() {
+    if (!textDisplayElement) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+    const range = selection.getRangeAt(0);
+
+    // 選択範囲内のテキストノードすべて走査
+    const walker = document.createTreeWalker(
+        textDisplayElement,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: function(node) {
+                // テキストノードが選択範囲と交差する場合のみ
+                const nodeRange = document.createRange();
+                nodeRange.selectNodeContents(node);
+                if (range.compareBoundaryPoints(Range.END_TO_START, nodeRange) < 0 &&
+                    range.compareBoundaryPoints(Range.START_TO_END, nodeRange) > 0) {
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_REJECT;
+            }
+        }
+    );
+    let node;
+    while ((node = walker.nextNode())) {
+        const parent = node.parentNode;
+        if (parent && parent.matches && parent.matches('span[class*="highlight-"]')) {
+            // spanをunwrap
+            unwrapSpan(parent);
+        }
+    }
+    showNotification('選択範囲のハイライトをクリアしました', 'success');
+}
+
+    // ヘルパー関数は削除
+    
+    function clearTextDisplay() {
+        if (!textDisplayElement) return;
+        currentDocument = null; 
+        textDisplayElement.innerHTML = `
+            <div class="upload-prompt">
+                <div class="icon">📄</div>
+                <p>ログイン後、テキストファイルをアップロードしてください</p>
+                <p>(.txt または .md ファイル)</p>
+            </div>
+        `;
+        textDisplayElement.classList.remove('has-content');
+        if (saveBtnElement) saveBtnElement.classList.add('hidden');
+    }
+    
+    function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('📋 コピーしました！', 'success');
+            }).catch(err => {
+                fallbackCopyToClipboard(text);
+            });
+        } else {
+            fallbackCopyToClipboard(text);
+        }
+    }
+
+    function fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '-9999px';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showNotification('📋 コピーしました！', 'success');
+            } else {
+                showNotification('コピーに失敗しました', 'error');
+            }
+        } catch (err) {
+            showNotification('コピーに失敗しました', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+    
+    function showNotification(message, type = 'info') {
+        if (!notificationElement) return;
+        notificationElement.textContent = message;
+        notificationElement.className = 'notification'; 
+        if (type) notificationElement.classList.add(type);
+        notificationElement.classList.add('show');
+        
+        setTimeout(() => {
+            notificationElement.classList.remove('show');
+        }, 3000);
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        const activeModal = document.querySelector('.modal[style*="display: block"]');
+        const isInputFocused = document.activeElement instanceof HTMLInputElement || 
+                               document.activeElement instanceof HTMLTextAreaElement ||
+                               (document.activeElement && document.activeElement.isContentEditable);
+
+
+        if (activeModal) {
+            if (e.key === 'Escape') {
+                 closeModal(activeModal.id);
+                 if (activeModal.id === 'deleteConfirmModal') { 
+                     docIdToDelete = null;
+                 }
+            }
+            return; 
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            if (currentUser && currentDocument && saveBtnElement && !saveBtnElement.classList.contains('hidden')) {
+                e.preventDefault();
+                saveDocument();
+            }
+        }
+        
+        if (!isInputFocused && e.key >= '1' && e.key <= '7') {
+            const colorIndex = parseInt(e.key) - 1;
+            const colorBtns = document.querySelectorAll('.color-palette .color-btn');
+            if (colorBtns[colorIndex]) {
+                e.preventDefault(); 
+                colorBtns[colorIndex].click();
+            }
+        }
+        
+        if (!isInputFocused && e.key === 'Escape') {
+             if (textDisplayElement && textDisplayElement.classList.contains('has-content')) {
+                const selection = window.getSelection();
+                if (!selection || selection.isCollapsed) { 
+                    e.preventDefault();
+                    clearAllHighlights(); 
+                }
+             }
+        }
+
+        if (!isInputFocused && (e.key === 'Delete' || e.key === 'Backspace')) {
+            const selection = window.getSelection();
+            if (selection && !selection.isCollapsed && textDisplayElement && textDisplayElement.contains(selection.anchorNode)) {
+                if (textDisplayElement.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+                    e.preventDefault(); 
+                    clearSelectedHighlights();
+                }
+            }
+        }
+    });
+    
+    function setupDragAndDrop() {
+        if (textDisplayElement) {
+            textDisplayElement.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (currentUser) { 
+                    this.style.borderColor = '#4facfe'; 
+                    this.style.backgroundColor = 'rgba(79, 172, 254, 0.1)';
+                }
+            });
+            
+            textDisplayElement.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = ''; 
+                this.style.backgroundColor = '';
+            });
+            
+            textDisplayElement.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = ''; 
+                this.style.backgroundColor = '';
+                
+                if (!currentUser) {
+                    showNotification('ファイルをアップロードするにはログインが必要です', 'error');
+                    return;
+                }
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+                        const fakeEvent = { target: { files: [file] } };
+                        handleFileUpload(fakeEvent);
+                    } else {
+                        showNotification('対応していないファイル形式です (.txtまたは.mdのみ)', 'warning');
+                    }
+                }
+            });
+        }
+    }
+</script>
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
+</body>
+</html>
