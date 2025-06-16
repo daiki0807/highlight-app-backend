@@ -6,9 +6,14 @@ require('dotenv').config();
 
 const app = express();
 
-// 基本設定
+// 基本設定 - Vercel フロントエンドURLを追加
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3001'],
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://127.0.0.1:3001',
+    'https://highlight-app-frontend.vercel.app'  // 追加
+  ],
   credentials: true
 }));
 
