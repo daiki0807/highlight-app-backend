@@ -1,91 +1,76 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
-// 基本設定 - Vercel フロントエンドURLを追加
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://127.0.0.1:3001',
-    'https://highlight-app-frontend.vercel.app'  // 追加
-  ],
+// -------------------------------------------------------------
+// 1. CORS設定（本番環境とローカル開発の両方を許可）
+// -------------------------------------------------------------
+const allowedOrigins = [
+  'http://localhost:3000', // ローカルのReact開発サーバー
+  'https://highlight-app-frontend.vercel.app' // Vercelの本番URL
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // オリジンがないリクエスト（Postmanなど）も許可するか、本番では '!' を外す
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
-}));
+};
+app.use(cors(corsOptions));
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// データベース接続
+// -------------------------------------------------------------
+// 2. 基本的なミドルウェア設定
+// -------------------------------------------------------------
+app.use(express.json()); // JSON形式のリクエストボディを解析
+
+
+// -------------------------------------------------------------
+// 3. データベース接続
+// -------------------------------------------------------------
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('✅ データベースに接続しました'))
-.catch(err => console.error('❌ データベース接続エラー:', err));
+  .then(() => console.log('✅ データベースに接続しました'))
+  .catch(err => {
+    console.error('❌ データベース接続エラー:', err);
+    process.exit(1); // 接続に失敗したらサーバーを停止
+  });
 
-// デバッグ用：全てのリクエストをログ
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
 
-// API設定（順序が重要）
+// -------------------------------------------------------------
+// 4. APIルートの設定
+// -------------------------------------------------------------
 console.log('🔧 APIルートを設定中...');
-
-// 認証ルート
 app.use('/api/auth', require('./routes/auth'));
 console.log('✅ Auth routes loaded');
 
-// 文書ルート（重要：これを確実に追加）
 app.use('/api/documents', require('./routes/documents'));
 console.log('✅ Documents routes loaded');
 
-// 基本ルート
+
+// -------------------------------------------------------------
+// 5. ルートパスへの生存確認用エンドポイント
+// -------------------------------------------------------------
 app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html><head><title>ハイライトアプリ</title></head>
-    <body style="font-family: Arial; text-align: center; padding: 50px;">
-      <h1>🎉 ハイライトアプリ</h1>
-      <p>サーバーが正常に動作中</p>
-      <p><a href="/index.html">アプリを開く</a></p>
-    </body></html>
-  `);
-});
-
-// API接続テスト用ルート
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'API接続成功',
-    timestamp: new Date().toISOString(),
-    routes: [
-      'POST /api/auth/register',
-      'POST /api/auth/login', 
-      'GET /api/auth/verify',
-      'POST /api/documents/upload',
-      'GET /api/documents',
-      'GET /api/documents/:id',
-      'PUT /api/documents/:id/highlights',
-      'DELETE /api/documents/:id'
-    ]
+  res.status(200).json({
+    message: 'Highlight App Backend is running!',
+    status: 'ok',
+    timestamp: new Date().toISOString()
   });
 });
 
-// 404エラーハンドリング
-app.use('*', (req, res) => {
-  console.log('❌ 404 - Route not found:', req.method, req.originalUrl);
-  res.status(404).json({ 
-    error: 'ルートが見つかりません',
-    path: req.originalUrl,
-    method: req.method 
-  });
-});
 
-// サーバー開始
-const PORT = process.env.PORT || 3001;
+// -------------------------------------------------------------
+// 6. サーバー起動
+// -------------------------------------------------------------
+const PORT = process.env.PORT || 10000; // Renderは通常10000番ポートを使う
 app.listen(PORT, () => {
-  console.log(`🚀 サーバーが起動しました！`);
-  console.log(`🌐 http://localhost:${PORT} でアクセスできます`);
+  console.log(`🚀 サーバーがポート ${PORT} で起動しました！`);
 });
